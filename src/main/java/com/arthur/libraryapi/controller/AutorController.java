@@ -3,9 +3,11 @@ package com.arthur.libraryapi.controller;
 import com.arthur.libraryapi.controller.dto.AutorDTO;
 import com.arthur.libraryapi.controller.mappers.AutorMapper;
 import com.arthur.libraryapi.model.Autor;
-import com.arthur.libraryapi.model.Usuario;
-import com.arthur.libraryapi.security.SecurityService;
 import com.arthur.libraryapi.service.AutorService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("autores")
 @RequiredArgsConstructor
+@Tag(name = "Autores")
 public class AutorController implements GenericController {
 
     private final AutorService autorService;
@@ -28,6 +31,12 @@ public class AutorController implements GenericController {
 
     @PostMapping
     @PreAuthorize("hasRole('GERENTE')")
+    @Operation(summary = "Salvar", description = "Cadastrar novo autor")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "cadastrado com sucesso."),
+            @ApiResponse(responseCode = "422", description = "Erro de validação."),
+            @ApiResponse(responseCode = "409", description = "Autor já cadastrado.")
+    })
     public ResponseEntity<Void> salvar(@RequestBody @Valid AutorDTO dto) {
 
         var autor = mapper.toEntity(dto);
@@ -41,6 +50,11 @@ public class AutorController implements GenericController {
 
     @GetMapping("{id}")
     @PreAuthorize("hasAnyRole('OPERADOR', 'GERENTE')")
+    @Operation(summary = "Obter detalhes", description = "Retorna os dados do autor por ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Autor encontrado."),
+            @ApiResponse(responseCode = "404", description = "Autor não encontrado.")
+    })
     public ResponseEntity<AutorDTO> obterDetalhes(@PathVariable("id") String id) {
         var idAutor = UUID.fromString(id);
 
@@ -54,6 +68,12 @@ public class AutorController implements GenericController {
 
     @DeleteMapping("{id}")
     @PreAuthorize("hasRole('GERENTE')")
+    @Operation(summary = "Deletar", description = "Deleta um autor por ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Deletado com sucesso."),
+            @ApiResponse(responseCode = "404", description = "Autor não encontrado."),
+            @ApiResponse(responseCode = "400", description = "Autor possui livro cadastrado.")
+    })
     public ResponseEntity<Void> deletar(@PathVariable("id") String id) {
 
         var idAutor = UUID.fromString(id);
@@ -71,6 +91,10 @@ public class AutorController implements GenericController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('OPERADOR', 'GERENTE')")
+    @Operation(summary = "Pesquisar", description = "Realiza pesquisa de autores por parâmetros")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Sucesso.")
+    })
     public ResponseEntity<List<AutorDTO>> pesquisar(
             @RequestParam(value = "nome", required = false) String nome,
             @RequestParam(value = "nacionalidade", required = false) String nacionalidade) {
@@ -85,6 +109,12 @@ public class AutorController implements GenericController {
 
     @PutMapping("{id}")
     @PreAuthorize("hasRole('GERENTE')")
+    @Operation(summary = "Atualizar", description = "Atualiza autor existente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Atualizado com sucesso."),
+            @ApiResponse(responseCode = "404", description = "Autor não encontrado."),
+            @ApiResponse(responseCode = "409", description = "Autor já cadastrado.")
+    })
     public ResponseEntity<Void> atualizar(@PathVariable("id") String id, @RequestBody @Valid AutorDTO dto) {
 
 
